@@ -29,14 +29,18 @@ jobs:
       - name: Extract LCGPS project
         run: |
           mkdir buildsrc
-          unzip -q LCGPS-GitHub-APK-Build.zip -d buildsrc
+          unzip -q LCGPS-OpenStreetMap.zip -d buildsrc
+
+      - name: Find project folder
+        run: |
+          PROJECT_DIR=$(find buildsrc -name settings.gradle.kts -print -quit | xargs dirname)
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Build APK
-        working-directory: buildsrc
-        run: gradle assembleDebug --no-daemon
+        run: gradle -p "$PROJECT_DIR" assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LCGPS-APK
-          path: buildsrc/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
